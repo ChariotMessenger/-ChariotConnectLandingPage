@@ -1,7 +1,7 @@
-package com.binkes.kizito_portfolio.styles
+package com.chariot.landing.styles
 
 
-import com.binkes.kizito_portfolio.models.ThemeByKizito
+import com.chariot.landing.models.ThemeByKizito
 import com.varabyte.kobweb.compose.css.Transition
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.color
@@ -21,17 +21,17 @@ val NavigationItemStyle = CssStyle {
     base {
         Modifier
             .styleModifier {
-                property("color", ThemeByKizito.Secondary.rgb)
+                property("color", ThemeByKizito.Primary.rgb)
             }
-            .color(ThemeByKizito.Secondary.rgb)
+            .color(ThemeByKizito.Primary.rgb)
             .transition(Transition.of(property = "color", duration = 200.ms))
     }
     hover {
         Modifier
             .styleModifier {
-                property("color", ThemeByKizito.Primary.rgb)
+                property("color", ThemeByKizito.ORANGE_COLOR.rgb)
             }
-            .color(ThemeByKizito.Primary.rgb)
+            .color(ThemeByKizito.ORANGE_COLOR.rgb)
     }
 }
 
@@ -57,12 +57,12 @@ val LogoStyle = CssStyle{
 val SocialLinkStyle = CssStyle {
     base {
         Modifier
-            .color(ThemeByKizito.Gray.rgb)
+            .color(ThemeByKizito.Primary.rgb)
             .transition(Transition.of(property = "color", duration = 200.ms))
     }
 
     hover{
-        Modifier.color(ThemeByKizito.Primary.rgb)
+        Modifier.color(ThemeByKizito.ORANGE_COLOR.rgb)
     }
 }
 
@@ -82,4 +82,3 @@ val MainButtonStyle = CssStyle{
     }
 
 }
-

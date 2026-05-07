@@ -1,46 +1,27 @@
-package com.zitos.web.binkes.sections
+package com.chariot.landing.components
 
 import androidx.compose.runtime.*
+import com.chariot.landing.models.ThemeByKizito
+import com.chariot.landing.styles.showdownStyle
+import com.chariot.landing.util.ConstantsObject
 import com.varabyte.kobweb.compose.css.*
-import com.varabyte.kobweb.compose.css.JustifyContent
-import com.varabyte.kobweb.compose.foundation.layout.Arrangement
-import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
-import com.varabyte.kobweb.compose.foundation.layout.Row
-import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
-import com.varabyte.kobweb.compose.ui.modifiers.alignItems
+import com.varabyte.kobweb.compose.ui.styleModifier
 import com.varabyte.kobweb.compose.ui.toAttrs
-import com.varabyte.kobweb.core.layout.Layout
 import com.varabyte.kobweb.framework.annotations.DelicateApi
-import com.varabyte.kobweb.silk.components.icons.fa.FaArrowLeft
-import com.varabyte.kobweb.silk.components.icons.fa.FaArrowRight
-import com.varabyte.kobweb.silk.components.icons.fa.FaRotateRight
-import com.varabyte.kobweb.silk.components.icons.fa.IconSize
-import com.varabyte.kobweb.silk.components.layout.SimpleGrid
-import com.varabyte.kobweb.silk.components.layout.numColumns
 import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.style.toModifier
 import com.varabyte.kobweb.silk.theme.breakpoint.rememberBreakpoint
-import com.zitos.web.binkes.components.ContentCodeLayout
-import com.zitos.web.binkes.components.ImageLayout
-import com.zitos.web.binkes.components.VideoPlayer
-import com.zitos.web.binkes.components.YouTubePlayer
-import com.zitos.web.binkes.dialogs.ExpandedImageDialog
-import com.zitos.web.binkes.models.ThemeByKizito
-import com.zitos.web.binkes.models.WebCardContentData
-import com.zitos.web.binkes.styles.showdownStyle
 import kotlinx.browser.document
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.css.AlignItems
-import org.jetbrains.compose.web.dom.*
-import org.jetbrains.compose.web.dom.Text
-import org.jetbrains.compose.web.renderComposable
-import org.w3c.dom.*
-import kotlin.js.Date
+import org.jetbrains.compose.web.css.CSSColorValue
+import org.jetbrains.compose.web.css.CSSSizeValue
+import org.jetbrains.compose.web.css.CSSUnit
+import org.jetbrains.compose.web.css.ms
+import org.jetbrains.compose.web.dom.Div
+import org.w3c.dom.HTMLElement
+import org.w3c.dom.asList
 
 
 // Top-level declarations
@@ -66,11 +47,12 @@ external object HlJs {
 @Composable
 fun RenderMarkdown(
     editText: String,
-    itemClickedData: WebCardContentData
+    fontWeightValue:  FontWeight,
+    fontFamilyValue: String = ConstantsObject.FONT_FAMILY,
+    textColor: CSSColorValue,
+    fontSize: CSSSizeValue<CSSUnit.px>
 ) {
 
-
-    val breakpoint = rememberBreakpoint()
 
 
     val output = remember { mutableStateOf("") }
@@ -133,13 +115,6 @@ fun RenderMarkdown(
 
     Column(
         Modifier
-            .fillMaxWidth(if (breakpoint <= Breakpoint.ZERO) 99.percent else
-                if (breakpoint <= Breakpoint.SM) 97.percent else
-                    if (breakpoint <= Breakpoint.MD) 90.percent else
-                        if (breakpoint <= Breakpoint.LG) 75.percent else 55.percent)
-
-        //.fillMaxWidth(if (breakpoint <= Breakpoint.SM) 70.percent else if (breakpoint <= Breakpoint.MD) 60.percent else 50.percent)
-        .padding(top = 0.px,8.px)
             .transition(
                 Transition.of(
                     property = TransitionProperty.All,
@@ -148,14 +123,15 @@ fun RenderMarkdown(
                     delay = null
                 )
                 )
-        //.backgroundColor(Color.blue)
-        //.overflow(Overflow.Hidden)
     ) {
 
         HtmlRenderer(
             html = output.value,
-            itemClickedData = itemClickedData
-            )
+            textColor = textColor,
+            fontWeightValue = fontWeightValue,
+            fontFamilyValue = fontFamilyValue,
+            fontSize = fontSize
+        )
 
 
     }
@@ -176,7 +152,10 @@ fun RenderMarkdown(
 @Composable
 fun HtmlRenderer(
     html: String,
-    itemClickedData:WebCardContentData,
+    textColor: CSSColorValue,
+    fontWeightValue: FontWeight,
+    fontFamilyValue: String,
+    fontSize: CSSSizeValue<CSSUnit.px>
 ) {
 
 
@@ -185,136 +164,26 @@ fun HtmlRenderer(
 
     val breakpoint = rememberBreakpoint()
 
-    val scope  =  rememberCoroutineScope()
-
-    var isImageExpanded by remember { mutableStateOf(false) }
-    var imageAndVideoExpandedLink by remember { mutableStateOf("") }
-
-
-
-// Manually write <title> and <meta> as raw HTML
-    /*
-    SideEffect {
-        val titleElement = document.createElement("title")
-        titleElement.textContent = topic
-        document.head?.appendChild(titleElement)
-
-        val metaDescription = document.createElement("meta")
-        metaDescription.setAttribute("name", "description")
-        metaDescription.setAttribute("content", description)
-        document.head?.appendChild(metaDescription)
-    }
-
-     */
-
-
-
-
-    SideEffect {
-        val doc: Document = document
-
-        // <title>
-        val titleElement = doc.querySelector("title") ?: doc.createElement("title").also {
-            doc.head?.appendChild(it)
-        }
-        titleElement.textContent = itemClickedData.contentTopic
-
-        // <meta name="description">
-        val metaDescription = doc.querySelector("meta[name='description']") as? Element
-            ?: doc.createElement("meta").also {
-                it.setAttribute("name", "description")
-                doc.head?.appendChild(it)
-            }
-        metaDescription.setAttribute("content", itemClickedData.contentDescription)
-
-        // <meta name="keywords">
-        val metaKeywords = doc.querySelector("meta[name='keywords']") as? Element
-            ?: doc.createElement("meta").also {
-                it.setAttribute("name", "keywords")
-                doc.head?.appendChild(it)
-            }
-        metaKeywords.setAttribute("content", itemClickedData.contentSearchKeywords)
-
-        // <meta property="og:image"> for social media preview thumbnails
-        val ogImage = doc.querySelector("meta[property='og:image']") as? Element
-            ?: doc.createElement("meta").also {
-                it.setAttribute("property", "og:image")
-                doc.head?.appendChild(it)
-            }
-        ogImage.setAttribute("content", itemClickedData.contentThumbnailUrl)
-
-        // Structured Data (JSON-LD for breadcrumbs, FAQ, etc.)
-        // Check if a Breadcrumb JSON-LD script already exists
-        val existingJsonLd = doc.querySelectorAll("script[type='application/ld+json']")
-            .asList()
-            .firstOrNull { it.textContent?.contains("\"@type\": \"BreadcrumbList\"") == true }
-
-        if (existingJsonLd == null) {
-            val jsonLdScript = doc.createElement("script")
-            jsonLdScript.setAttribute("type", "application/ld+json")
-            jsonLdScript.textContent = """
-        {
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            {
-              "@type": "ListItem",
-              "position": 1,
-              "name": "Home",
-              "item": "https://zitoscode.com/"
-            },
-            {
-              "@type": "ListItem",
-              "position": 2,
-              "name": "${itemClickedData.contentTopic}",
-              "item": "https://zitoscode.com/post/${itemClickedData.documentID}"
-            }
-          ]
-        }
-    """.trimIndent()
-
-            doc.head?.appendChild(jsonLdScript)
-        }
-
-
-    }
-
-
-
-
-
-    if (isImageExpanded) {
-
-        ExpandedImageDialog(
-            breakpoint = breakpoint,
-            imageUrl = imageAndVideoExpandedLink,
-            onCancel = {
-                isImageExpanded = false
-                imageAndVideoExpandedLink = ""
-            },
-        )
-    }
-
-
-
 
     Div(
         attrs = showdownStyle.toModifier()
             .whiteSpace(WhiteSpace.Normal)
             //.wordBreak(WordBreak.KeepAll)
-            .fillMaxWidth()
-            .lineHeight(1.5)
+            //.fillMaxWidth()
+            //.lineHeight(1)
+            .fontWeight(fontWeightValue)
             .fontSize(
-                if (breakpoint <= Breakpoint.ZERO) 13.5.px else
-                if (breakpoint <= Breakpoint.SM) 16.px else
-                    if (breakpoint <= Breakpoint.MD) 19.px else
-                        if (breakpoint <= Breakpoint.LG) 19.5.px else 20.px
+                fontSize
             )
-            .color(ThemeByKizito.TextBlack.rgb)
+            .color(textColor)
             // .overflow(Overflow.Hidden)
             //.wordBreak(WordBreak.BreakAll) // 👈 this is the fix
             .overflowWrap(OverflowWrap.BreakWord)
-            .fontFamily("Georgia", "serif") // ← This is the key change
+            .fontFamily(fontFamilyValue, ConstantsObject.FALL_BACK_FONT)
+            .styleModifier {
+                property("margin", "0")  // Remove default margins
+                property("padding", "0") // Remove default padding
+            }
             //.fontFamily("Roboto", "sans-serif")
             .toAttrs(),
         content = {
@@ -339,43 +208,24 @@ fun HtmlRenderer(
                     el.innerHTML = html
 
 
+                    // Apply styles to all paragraphs to remove extra spacing
+                    el.querySelectorAll("p").asList().forEach { node ->
+                        (node as? HTMLElement)?.style?.apply {
+                            marginBottom = "0"  // Remove bottom margin
+                            marginTop = "0"     // Remove top margin
+                            paddingBottom = "0" // Remove bottom padding
+                            paddingTop = "0"    // Remove top padding
+                            lineHeight = "1.5"  // Consistent line height
+                        }
+                    }
+
+
                     // CENTER HEADINGS
                     val headingTags = listOf("h1", "h2", "h3", "h4", "h5", "h6")
 
 
                     headingTags.forEach { tag ->
                         el.querySelectorAll(tag).asList().forEach { node ->
-                            /*
-                            val heading = node as? HTMLElement ?: return@LaunchedEffect//@forEach
-
-                            // Set center alignment
-                            heading.style.textAlign = "center"
-
-                            // Apply font size based on tag
-
-                            heading.style.fontSize = when (tag) {
-                                "h1" -> "2.5rem"
-                                "h2" -> "2rem"
-                                "h3" -> "1.75rem"
-                                "h4" -> "1.5rem"
-                                "h5" -> "1.25rem"
-                                "h6" -> "1rem"
-                                else -> "1rem"
-                            }
-
-                            heading.style.lineHeight = "1.2"
-                            heading.style.fontFamily = "Roboto, sans-serif"
-                            heading.style.fontFamily = FontWeight.ExtraBold.toString()
-
-
-                             */
-
-
-                            // Optional: Add spacing
-                            //heading.style.marginTop = "1em"
-                            // heading.style.marginBottom = "0.5em"
-
-
                             (node as? HTMLElement)?.style?.apply {
                                 when (tag) {
                                     "h1" -> {
@@ -421,7 +271,7 @@ fun HtmlRenderer(
                                 marginTop=  topAndBottomMargin
                                 marginBottom = topAndBottomMargin
 
-                                color = ThemeByKizito.TextBlue.rgb.toString()
+                                color = textColor.toString()
                             }
 
 
@@ -463,112 +313,11 @@ fun HtmlRenderer(
 
 
 
-                    // let's use a nuclear approach that guarantees the style will apply. We'll combine inline styles
-                    // with dynamic HTML manipulation.
-                    // Force-styling for ALL inline code blocks
-                    // Inline code (code) → Prevents wrapping, keeps it in a single line
-                    el.querySelectorAll("code:not(pre code)").asList().forEach { node ->
-                        (node as? HTMLElement)?.style?.apply {
-                            color = ThemeByKizito.TextBlack.rgb.toString() // 👈 Direct inline style
-                            backgroundColor = "lightgray"
-                            padding = "0 2px"
-                            borderRadius = "4px"
-                            fontFamily = "monospace"
-                            whiteSpace = "nowrap"
-                            // Debugging line (temporary):
-                            // border = "1px solid red" // Verify this element is selected
-                        }
-                    }
-
-
-
 
                     // Handle spoiler elements
                     val spoilers = el.querySelectorAll(".spoiler").asList()
                     spoilers.forEach { insertBlurEffect(it as HTMLElement) }
 
-
-
-
-
-                    val preBlocks = (element as? HTMLElement)?.querySelectorAll("pre")?.asList() ?: emptyList()
-
-                    preBlocks.forEach { preBlock ->
-
-                        (preBlock as? HTMLElement)?.style?.apply {
-                            setProperty("max-width", "85%")
-                            setProperty("max-height", "500px")
-                            //  setProperty("background-color", "red")
-                            setProperty("place-self", "center")
-                            fontFamily = "monospace"
-                            borderBottomLeftRadius = "8px"
-                            borderBottomRightRadius = "8px"
-                            // padding = "4px"
-                        }
-
-
-                        val codeElement =
-                            (preBlock as? HTMLElement)?.querySelector("code") as? HTMLElement ?: return@forEach
-                        val codeText = codeElement.textContent ?: ""
-
-
-                        codeElement.style.apply {
-                            setProperty("width", "100%")
-                            setProperty("height", "100%")
-                            // setProperty("background-color", "blue")
-                            setProperty("scroll-behavior", "smooth")
-                        }
-
-
-
-                        //  Extract language properly
-                        val language = codeElement.className
-                            .split(" ")
-                            .find { it.startsWith("language-") }
-                            ?.removePrefix("language-")
-                            ?: "Plain Text"
-
-
-                        // highlight code
-                        // HlJs.highlightElement(codeElement)
-
-
-
-
-
-                        // Create a container div to replace the <pre> content
-                        val containerId = "code-container-${preBlocks.indexOf(preBlock)}"
-                        preBlock.innerHTML = "<div id='$containerId'></div>"
-
-                        val container = document.getElementById(containerId)
-
-
-
-                        if (container != null) {
-                            renderComposable(container) {
-
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center
-                                    // verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    ContentCodeLayout(
-                                        modifier = Modifier,
-                                        language = language,
-                                        code = codeText,
-                                        breakpoint = breakpoint
-                                    )
-
-                                }
-
-
-                            }
-                        }
-
-
-                    }
 
 
 
@@ -634,282 +383,6 @@ fun HtmlRenderer(
                                 "info"
                             )
 
-                            firstLine.startsWith("[youtube]") -> {
-
-
-                                val youTubeUrlList: List<String> = paragraphs.flatMap { p ->
-                                    val pElement = p as HTMLElement
-                                    val content = pElement.textContent ?: ""
-
-                                    content.split("[youtube]")
-                                        .mapNotNull { rawUrl ->
-                                            val url = rawUrl.trim()
-                                            if (url.isNotEmpty()) url else null
-                                        }
-                                }
-
-
-
-                                // Remove ALL [youtube] lines from the DOM
-                                paragraphs.forEach { p ->
-                                    val text = (p as HTMLElement).textContent?.trim() ?: ""
-                                    if (text.startsWith("[youtube]")) {
-                                        p.remove()
-                                    }
-                                }
-
-
-                                // Inject a new container after the text
-                                val containerId = "youtube-container-${Date().getTime()}"
-                                val youtubeDiv = document.createElement("div") as HTMLElement
-                                youtubeDiv.id = containerId
-                                youtubeDiv.style.marginTop = "12px"
-                                blockquote.appendChild(youtubeDiv)
-
-
-
-
-                                renderComposable(youtubeDiv) {
-
-                                    val currentIndex = remember { mutableStateOf(0) }
-                                    val currentVideo by remember { derivedStateOf { youTubeUrlList[currentIndex.value] } }
-
-                                    var refresh by remember { mutableStateOf(true) }
-
-
-
-                                    Box(modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(40.px),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-
-                                        FaRotateRight(
-                                            modifier = Modifier
-                                                .cursor(Cursor.Pointer)
-                                                .onClick {
-                                                    scope.launch {
-                                                        refresh = false
-                                                        delay(250)
-                                                        refresh = true
-                                                    }
-                                                },
-                                            size = IconSize.LG
-                                        )
-                                    }
-
-
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center
-                                    ) {
-
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth(20.percent),
-                                            horizontalArrangement = Arrangement.End
-                                        ) {
-                                            if (youTubeUrlList.size > 1) {
-                                                if (currentIndex.value > 0) {
-
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .cursor(Cursor.Pointer)
-                                                            .onClick {
-
-                                                                if (currentIndex.value > 0) {
-                                                                    currentIndex.value -= 1 // Move to the previous video
-                                                                }
-
-                                                            }
-                                                    ) {
-                                                        FaArrowLeft(
-                                                            modifier = Modifier
-                                                                .margin(all = 10.px), size = IconSize.XL
-                                                        )
-                                                    }
-
-                                                }
-                                            }
-
-                                        }
-
-
-                                        Row(
-                                            modifier = Modifier
-                                                // .fillMaxWidth(60.percent)
-                                                .fillMaxWidth(if (breakpoint <= Breakpoint.SM) 80.percent else if (breakpoint <= Breakpoint.MD) 70.percent else 60.percent)
-                                                .maxHeight(360.px)
-                                                .margin(bottom = 8.px, top = 0.px, left = 10.px, right = 10.px)
-                                                .overflow { x(Overflow.Hidden) },
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-
-                                            // refresh is jus for refresh just to hide abd show
-                                            if (refresh) {
-
-                                                YouTubePlayer(
-                                                    modifier = Modifier,//.maxWidth(95.percent),
-                                                    videoUrl = currentVideo
-                                                )
-
-                                            }else{
-
-                                                // dommi it is not usefully only to keep the layout height and width
-                                                YouTubePlayer(
-                                                    modifier = Modifier,
-                                                    videoUrl = ""
-                                                )
-
-                                            }
-
-                                        }
-
-
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth(20.percent),
-                                            horizontalArrangement = Arrangement.Start
-                                        ) {
-                                            if (youTubeUrlList.size > 1 && (currentIndex.value < youTubeUrlList.size - 1)) {
-
-                                                Box(
-                                                    modifier = Modifier
-                                                        .cursor(Cursor.Pointer)
-                                                        .onClick {
-                                                            if (currentIndex.value < youTubeUrlList.size - 1) {
-                                                                currentIndex.value += 1 // Move to the next video
-                                                            }
-                                                        }
-                                                ) {
-                                                    FaArrowRight(
-                                                        modifier = Modifier
-                                                            .margin(all = 10.px),
-                                                        size = IconSize.XL
-                                                    )
-                                                }
-                                            }
-                                        }
-
-
-
-                                    }
-
-
-                                }
-
-                            }
-
-                            firstLine.startsWith("[video]") -> {
-
-
-                                val videoUrlList: List<String> = paragraphs.flatMap { p ->
-                                    val pElement = p as HTMLElement
-                                    val content = pElement.textContent ?: ""
-
-                                    content.split("[video]")
-                                        .mapNotNull { rawUrl ->
-                                            val url = rawUrl.trim()
-                                            if (url.isNotEmpty()) url else null
-                                        }
-                                }
-
-
-
-                                // Remove ALL [video] lines from the DOM
-                                paragraphs.forEach { p ->
-                                    val text = (p as HTMLElement).textContent?.trim() ?: ""
-                                    if (text.startsWith("[video]")) {
-                                        p.remove()
-                                    }
-                                }
-
-
-                                // Inject a new container after the text
-                                val containerId = "video-container-${Date().getTime()}"
-                                val videoDiv = document.createElement("div") as HTMLElement
-                                videoDiv.id = containerId
-
-                                videoDiv.style.apply {
-                                    display = "flex"               // Add this
-                                    justifyContent = "center"      // Center children horizontally
-                                    alignItems = "center"          // Center children vertically (optional)
-                                    flexWrap = "wrap"              // Allow items to wrap
-                                    width = "100%"
-                                    marginTop = "12px"
-                                }
-
-                                blockquote.appendChild(videoDiv)
-
-
-
-
-                                renderComposable(videoDiv) {
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center
-                                    ) {
-
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth(if (breakpoint <= Breakpoint.SM) 80.percent else if (breakpoint <= Breakpoint.MD) 70.percent else 60.percent)
-                                                .alignSelf(org.jetbrains.compose.web.css.AlignSelf.SafeCenter),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-
-                                            val listSize by remember { derivedStateOf { videoUrlList.size  } }
-
-                                            SimpleGrid(
-                                                numColumns = numColumns(
-                                                    base = 1,
-                                                    sm = if (listSize >= 2) 2 else 1,
-                                                    lg = if (listSize >= 3) 3 else if (listSize >= 2) 2 else 1
-                                                ),
-                                                modifier = Modifier.alignContent(com.varabyte.kobweb.compose.css.AlignContent.Center)
-                                            ) {
-
-                                                videoUrlList.forEach { videoUrl ->
-
-
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            //.display(DisplayStyle.Flex)
-                                                            //.justifyContent(JustifyContent.Center)
-                                                           // .alignItems(AlignItems.Center)
-
-                                                            .display(DisplayStyle.Block)
-                                                            .textAlign(TextAlign.Center)
-                                                    ) {
-
-
-                                                        VideoPlayer(
-                                                            breakpoint = breakpoint,
-                                                            videoUrl = videoUrl
-                                                        )
-                                                    }
-
-                                                }
-
-
-                                            }
-
-
-                                        }
-
-                                    }
-
-
-                                }
-
-                            }
-
                             else -> applyBlockquoteStyle(blockquote, nestingLevel, "default")
                         }
 
@@ -919,6 +392,7 @@ fun HtmlRenderer(
                             processBlockquote(nested as HTMLElement, nestingLevel + 1)
                         }
                     }
+
                     // Start with top-level blockquotes
                     val topLevelBlockquotes = element!!.querySelectorAll("blockquote").asList()
                     topLevelBlockquotes.forEach {
@@ -928,128 +402,12 @@ fun HtmlRenderer(
 
 
 
-                    // Find all image elements
-                    val allImages = el.querySelectorAll("img").asList()
-
-                    // Group consecutive images
-                    val imageGroups = mutableListOf<List<HTMLImageElement>>()
-                    val currentGroup = mutableListOf<HTMLImageElement>()
-
-                    // Helper function to check if two nodes are siblings
-                    fun areSiblings(a: Node, b: Node): Boolean {
-                        return a.parentNode == b.parentNode
-                    }
-
-                    allImages.forEachIndexed { index, img ->
-                        if (currentGroup.isEmpty()) {
-                            // Start new group
-                            currentGroup.add(img as HTMLImageElement)
-                        } else {
-                            val prevImg = currentGroup.last()
-                            // Check if this image is consecutive to previous one
-                            if (areSiblings(prevImg, img) &&
-                                prevImg.nextSibling?.let { it == img || it.textContent.isNullOrBlank() } == true) {
-                                currentGroup.add(img as HTMLImageElement)
-                            } else {
-                                // Finalize current group and start new one
-                                imageGroups.add(currentGroup.toList())
-                                currentGroup.clear()
-                                currentGroup.add(img as HTMLImageElement)
-                            }
-                        }
-                    }
-
-                    // Add the last group if it exists
-                    if (currentGroup.isNotEmpty()) {
-                        imageGroups.add(currentGroup.toList())
-                    }
-
-                    // Process each image group
-                    imageGroups.forEachIndexed { groupIndex, group ->
-
-                        // Create a container div for this group
-                        val container = document.createElement("div") as HTMLElement
-                        container.id = "image-group-$groupIndex"
-
-                        container.style.apply {
-                            display = "flex"               // Add this
-                            justifyContent = "center"      // Center children horizontally
-                            alignItems = "center"          // Center children vertically (optional)
-                            flexWrap = "wrap"              // Allow items to wrap
-                            width = "100%"
-                        }
-
-
-
-                        // Insert container before the first image in the group
-                        group.first().parentNode?.insertBefore(container, group.first())
-
-                        // Remove original images from DOM
-                        group.forEach { it.remove() }
-
-                        // Render the image group
-                        renderComposable(container) {
-
-
-
-                            val listSize by remember { derivedStateOf { group.size } }
-
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .margin(all = 5.px),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                SimpleGrid(
-                                    numColumns = numColumns(
-                                        base = 1,
-                                        sm = if (listSize >= 2) 2 else 1,
-                                        lg = if (listSize >= 3) 3 else if (listSize >= 2) 2 else 1
-                                    ),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                ) {
-                                    group.forEachIndexed { index, img ->
-
-                                        val globalIndex = groupIndex * group.size + index
-
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .display(DisplayStyle.Flex)
-                                                .justifyContent(JustifyContent.Center)
-                                                .alignItems(AlignItems.Center)
-                                        ) {
-
-                                            ImageLayout(
-                                                breakpoint = breakpoint,
-                                                imageUrl = img.src,
-                                                altId = img.alt.ifEmpty { "content img thumbnail $globalIndex" },
-                                                onImageClicked = { src ->
-                                                    isImageExpanded = true
-                                                    imageAndVideoExpandedLink = src
-                                                }
-                                            )
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-
-
-
-
-
                     // TABLES
                     el.querySelectorAll("table").asList().forEach { tableNode ->
 
                         val table = tableNode as? HTMLElement ?: return@forEach
 
-                        val tableBorderColor = ThemeByKizito.Black.rgb.toString()// << set your custom table line color here
+                        val tableBorderColor = textColor.toString()// << set your custom table line color here
 
                         // Create a scrollable wrapper div
                         val scrollContainer = document.createElement("div") as HTMLElement
@@ -1091,7 +449,7 @@ fun HtmlRenderer(
                                 paddingTop = topAmdBottomPadding
                                 paddingBottom = topAmdBottomPadding
 
-                                backgroundColor = ThemeByKizito.LightPersianOrange.rgb.toString()
+                                backgroundColor = ThemeByKizito.ORANGE_COLOR.rgb.toString()
                                 border = "0.7px solid $tableBorderColor"
                                 //  fontSize = FontSize.Large.toString()
                                 fontWeight = FontWeight.Bold.toString()

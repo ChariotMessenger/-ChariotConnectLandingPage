@@ -1,0 +1,14 @@
+site:
+  title: "ChariotConnectLandingPage"
+
+server:
+  files:
+    dev:
+      contentRoot: "build/processedResources/js/main/public"
+      script: "build/kotlin-webpack/js/developmentExecutable/landing.js"
+      api: "build/libs/landing.jar"
+    prod:
+      script: "build/kotlin-webpack/js/productionExecutable/landing.js"
+      siteRoot: ".kobweb/site"
+
+  port: 8080

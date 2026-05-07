@@ -1,4 +1,4 @@
-package com.binkes.kizito_portfolio.util
+package com.chariot.landing.util
 
 import kotlinx.browser.window
 
