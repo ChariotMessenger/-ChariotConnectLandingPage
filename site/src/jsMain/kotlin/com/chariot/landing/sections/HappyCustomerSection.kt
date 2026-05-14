@@ -27,15 +27,31 @@ import org.jetbrains.compose.web.dom.P
 import org.jetbrains.compose.web.dom.Text
 
 // ── Top level - outside any composable ────────────────────
+//val ScrollLeftKeyframes = Keyframes {
+//    from { Modifier.translateX(0.percent) }
+//    to { Modifier.translateX((-70).percent) }
+//}
+//
+//val ScrollRightKeyframes = Keyframes {
+//    from { Modifier.translateX((-70).percent) }
+//    to { Modifier.translateX(0.percent) }
+//}
+
+
+
+// ── Top level - outside any composable ────────────────────
 val ScrollLeftKeyframes = Keyframes {
     from { Modifier.translateX(0.percent) }
-    to { Modifier.translateX((-70).percent) }
+    to { Modifier.translateX((-50).percent) }  // Always 50% - works with any count
 }
 
 val ScrollRightKeyframes = Keyframes {
-    from { Modifier.translateX((-70).percent) }
+    from { Modifier.translateX((-50).percent) }
     to { Modifier.translateX(0.percent) }
 }
+
+
+
 
 //val AutoScrollRowStyle = CssStyle {
 //    //cssRule(":hover") {
@@ -227,7 +243,85 @@ private enum class ScrollDirection {
 
 
 
+@OptIn(DelicateApi::class)
+@Composable
+private fun AutoScrollingRow(
+    images: List<String>,
+    height: CSSLengthOrPercentageNumericValue,
+    gap: CSSLengthOrPercentageNumericValue = 15.px,
+    direction: ScrollDirection = ScrollDirection.LEFT,
+    onImageClick: ((String) -> Unit)? = null
+) {
+    // Triple the list instead of double - ensures screen is always filled
+    // even on ultrawide displays
+    val scrollingImages = remember(images) { images + images + images }
 
+    val keyframes = remember(direction) {
+        if (direction == ScrollDirection.LEFT) ScrollLeftKeyframes else ScrollRightKeyframes
+    }
+
+    // Speed: pixels-per-second approach via CSS custom property
+    // We target ~80px/s. Duration = (image_count * avg_item_width) / 80
+    // Simpler: scale duration with count so speed stays constant
+    val baseDuration = remember(images.size) {
+        // ~3s per image keeps speed consistent regardless of list length
+        (images.size * 3).s
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height)
+            .overflow(Overflow.Hidden)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxHeight()
+                .styleModifier {
+                    // max-content width = track is exactly as wide as its children
+                    // This prevents the percentage-based translateX from
+                    // referencing the wrong width and causing jank
+                    property("width", "max-content")
+                    property("flex-shrink", "0")
+                    property("will-change", "transform")  // GPU hint - eliminates lag
+                }
+                .animation(
+                    keyframes.toAnimation(
+                        duration = baseDuration,
+                        iterationCount = AnimationIterationCount.Infinite,
+                        timingFunction = AnimationTimingFunction.Linear,
+                    )
+                ),
+            horizontalArrangement = Arrangement.spacedBy(gap)
+        ) {
+            scrollingImages.forEach { img ->
+                Image(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .objectFit(ObjectFit.Contain)
+                        .styleModifier {
+                            property("flex-shrink", "0")
+                            property("pointer-events", "auto")
+                        }
+                        .then(
+                            onImageClick?.let { click ->
+                                Modifier.onClick { click(img) }
+                            } ?: Modifier
+                        )
+                        .onContextMenu { event ->
+                            event.preventDefault()
+                            event.stopPropagation()
+                        },
+                    src = img,
+                    description = "customer image"
+                )
+            }
+        }
+    }
+}
+
+
+/*
 // ── Composable ─────────────────────────────────────────────
 @OptIn(DelicateApi::class)
 @Composable
@@ -291,6 +385,8 @@ private fun AutoScrollingRow(
         }
     }
 }
+
+ */
 
 
 

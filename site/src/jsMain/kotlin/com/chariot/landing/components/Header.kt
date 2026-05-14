@@ -135,21 +135,30 @@ fun LeftSide(
                     condition = isDesktop(),
                     other = LogoStyle.toModifier()
                 )
-                .maxWidth(if (breakpoint <= Breakpoint.MD){
-                    40.px
-                }else{
-                    if (breakpoint <= Breakpoint.LG){
-                        50.px
-                    }else{
-                        70.px
-                    }
-                })
+                .maxWidth(if (breakpoint <= Breakpoint.ZERO){
+                        80.px
+                    }else {
+
+                        if (breakpoint <= Breakpoint.SM) {
+                            100.px
+                        } else {
+                            if (breakpoint <= Breakpoint.MD) {
+                                130.px
+                            } else {
+                                if (breakpoint <= Breakpoint.LG) {
+                                    160.px
+                                } else {
+                                    180.px
+                                }
+                            }
+                        }
+                    })
                 // Disable right-click / long-press
                 . onContextMenu { event ->
                     event.preventDefault()
                     event.stopPropagation()
                 },
-            src =  ResObject.Icon.logo,
+            src =  ResObject.Icon.logo_white,
             description = "logo icon",
         )
 

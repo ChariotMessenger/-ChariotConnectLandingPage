@@ -6,6 +6,28 @@ enum class Section(
     val title: String,
     val path: String
 ) {
+
+
+    WhatYouNeed(
+        id = "whatYouNeedId",
+        title = "",
+        path = "#whatYouNeedId"
+    ),
+
+    WhatSpecialIconTop(
+        id = " whatSpecialImageTopId",
+        title = "",
+        path = "#whatSpecialImageTopId"
+    ),
+
+    WhatSpecialIconBottom(
+        id = "whatSpecialImageBottomId",
+        title = "",
+        path = "#whatSpecialImageBottomId"
+    ),
+
+
+
     Home(
         id = "homeId",
         title = "Home",

@@ -2,10 +2,16 @@ package com.chariot.landing.sections
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import com.chariot.landing.models.Section
 import com.chariot.landing.models.ThemeByKizito
 import com.chariot.landing.util.ConstantsObject
+import com.chariot.landing.util.ObserveViewportEntered
 import com.chariot.landing.util.ResObject
 import com.varabyte.kobweb.compose.css.FontWeight
 import com.varabyte.kobweb.compose.css.ObjectFit
@@ -25,6 +31,7 @@ import com.varabyte.kobweb.silk.components.layout.numColumns
 import com.varabyte.kobweb.silk.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.theme.breakpoint.rememberBreakpoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.Color
 import org.jetbrains.compose.web.css.ms
 import org.jetbrains.compose.web.css.px
@@ -40,6 +47,10 @@ fun WhatSpecial(
 
 
     val breakpoint = rememberBreakpoint()
+
+
+
+
 
 
     Column(modifier = Modifier
@@ -197,8 +208,8 @@ fun WhatSpecial(
         ) {
 
 
-            AiAnimationSection()
 
+            AiAnimationSection()
 
 
 
@@ -256,21 +267,32 @@ private fun AiAnimationSection(
     val showImage3 = remember { mutableStateOf(false) }
     val showImage4 = remember { mutableStateOf(false) }
 
+    var isViewportEntered by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit){
-        delay(1200)
-        showImage2.value = true
 
-        delay(400)
-        showImage3.value = true
 
-        delay(40)
-        showImage4.value = true
+    LaunchedEffect(isViewportEntered){
+
+        if (isViewportEntered) {
+
+            //delay(1200)
+            delay(700)
+            showImage2.value = true
+
+            //delay(400)
+            delay(250)
+            showImage3.value = true
+
+            //delay(40)
+            delay(20)
+            showImage4.value = true
+        }
     }
 
 
 
     Box(modifier = Modifier
+        .id(Section.WhatSpecialIconTop.id)
         .fillMaxWidth()
     ) {
         CustomImage(
@@ -295,6 +317,20 @@ private fun AiAnimationSection(
 
     }
 
+
+    ObserveViewportEntered(
+        sectionId = Section.WhatSpecialIconTop.id,
+        distanceFromTop = 300.0,
+        onViewportEntered = {
+
+            isViewportEntered = true
+
+        }
+    )
+
+
+
+
 }
 
 
@@ -306,16 +342,21 @@ private fun AppPurposeSection(
 
     val showPhoneImage = remember { mutableStateOf(false) }
 
+    var isViewportEntered by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit){
-        delay(2000)
-        showPhoneImage.value = true
 
+
+    LaunchedEffect(isViewportEntered){
+        if (isViewportEntered) {
+            delay(1200)
+            showPhoneImage.value = true
+        }
     }
 
 
     Box(modifier = Modifier
         .fillMaxWidth()
+        .id(Section.WhatSpecialIconBottom.id)
     ) {
         CustomImage(
             src = ResObject.Image.img_purpose_f1,
@@ -339,6 +380,18 @@ private fun AppPurposeSection(
             description = "image",
         )
     }
+
+
+
+    ObserveViewportEntered(
+        sectionId = Section.WhatSpecialIconTop.id,
+        distanceFromTop = 230.0,
+        onViewportEntered = {
+
+            isViewportEntered = true
+
+        }
+    )
 
 
 }

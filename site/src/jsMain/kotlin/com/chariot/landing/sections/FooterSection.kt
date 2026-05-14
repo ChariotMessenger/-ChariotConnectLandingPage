@@ -11,11 +11,13 @@ import com.chariot.landing.models.FollowUs.*
 import com.chariot.landing.models.Section
 import com.chariot.landing.models.ThemeByKizito
 import com.chariot.landing.styles.EmailButtonStyle
+import com.chariot.landing.styles.LogoStyle
 import com.chariot.landing.styles.NavigationItemStyle
 import com.chariot.landing.styles.SocialLinkStyle
 import com.chariot.landing.styles.TextInputStyle
 import com.chariot.landing.util.ConstantsObject
 import com.chariot.landing.util.ResObject
+import com.chariot.landing.util.isDesktop
 import com.varabyte.kobweb.compose.css.Cursor
 import com.varabyte.kobweb.compose.css.FontWeight
 import com.varabyte.kobweb.compose.css.ObjectFit
@@ -28,40 +30,31 @@ import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
-import com.varabyte.kobweb.compose.ui.attrsModifier
-import com.varabyte.kobweb.compose.ui.modifiers.ColumnRuleScope
-import com.varabyte.kobweb.compose.ui.modifiers.background
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
-import com.varabyte.kobweb.compose.ui.modifiers.border
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
-import com.varabyte.kobweb.compose.ui.modifiers.boxShadow
-import com.varabyte.kobweb.compose.ui.modifiers.classNames
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.cursor
-import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.fontFamily
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.fontWeight
 import com.varabyte.kobweb.compose.ui.modifiers.gap
-import com.varabyte.kobweb.compose.ui.modifiers.id
-import com.varabyte.kobweb.compose.ui.modifiers.margin
+import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.objectFit
 import com.varabyte.kobweb.compose.ui.modifiers.onContextMenu
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.size
 import com.varabyte.kobweb.compose.ui.modifiers.textDecorationLine
-import com.varabyte.kobweb.compose.ui.modifiers.title
 import com.varabyte.kobweb.compose.ui.modifiers.transition
 import com.varabyte.kobweb.compose.ui.modifiers.userSelect
-import com.varabyte.kobweb.compose.ui.modifiers.zIndex
+import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.styleModifier
+import com.varabyte.kobweb.compose.ui.thenIf
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.framework.annotations.DelicateApi
 import com.varabyte.kobweb.navigation.OpenLinkStrategy
 import com.varabyte.kobweb.silk.components.forms.InputDefaults
 import com.varabyte.kobweb.silk.components.forms.InputSize
-import com.varabyte.kobweb.silk.components.forms.InputStyle
 import com.varabyte.kobweb.silk.components.forms.TextInput
 import com.varabyte.kobweb.silk.components.graphics.Image
 import com.varabyte.kobweb.silk.components.icons.fa.FaInstagram
@@ -77,21 +70,13 @@ import com.varabyte.kobweb.silk.style.common.PlaceholderColor
 import com.varabyte.kobweb.silk.style.toModifier
 import com.varabyte.kobweb.silk.theme.breakpoint.rememberBreakpoint
 import org.jetbrains.compose.web.attributes.AutoComplete
-import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.Color
-import org.jetbrains.compose.web.css.LineStyle
-import org.jetbrains.compose.web.css.background
-import org.jetbrains.compose.web.css.fontFamily
 import org.jetbrains.compose.web.css.ms
-import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.A
 import org.jetbrains.compose.web.dom.Button
 import org.jetbrains.compose.web.dom.Div
-import org.jetbrains.compose.web.dom.Input
-import org.jetbrains.compose.web.dom.P
 import org.jetbrains.compose.web.dom.Text
-import kotlin.compareTo
 
 
 @OptIn(DelicateApi::class)
@@ -231,15 +216,34 @@ private fun BottonPart(
                         .transition(
                             Transition.of(property = "transform", duration = 200.ms)
                         )
-                        .size(60.px)
+                        .width(if (breakpoint <= Breakpoint.ZERO){
+                            80.px
+                        }else {
+
+                            if (breakpoint <= Breakpoint.SM) {
+                                100.px
+                            } else {
+                                if (breakpoint <= Breakpoint.MD) {
+                                    130.px
+                                } else {
+                                    if (breakpoint <= Breakpoint.LG) {
+                                        160.px
+                                    } else {
+                                        180.px
+                                    }
+                                }
+                            }
+                        })
                         .objectFit(ObjectFit.Contain)
                         .onContextMenu { event ->
                             event.preventDefault()
                             event.stopPropagation()
                         },
-                    src = ResObject.Icon.logo,
+                    src = ResObject.Icon.logo_white,
                     description = "icon",
                 )
+
+
 
 
                 Div(
